@@ -465,11 +465,13 @@ void getMlvProcessedFrame16(mlvObject_t * video, uint64_t frameIndex, uint16_t *
     getMlvRawFrameDebayered(video, frameIndex, unprocessed_frame);
 
     /* Do processing.......... */
+    TICK(applyProcessingObject_)
     applyProcessingObject( video->processing,
                            width, height,
                            unprocessed_frame,
                            outputFrame,
                            threads, 1, frameIndex );
+    TOCK(applyProcessingObject_)
 
     free(unprocessed_frame);
 }
@@ -477,13 +479,18 @@ void getMlvProcessedFrame16(mlvObject_t * video, uint64_t frameIndex, uint16_t *
 /* Get a processed frame in 8 bit */
 void getMlvProcessedFrame8(mlvObject_t * video, uint64_t frameIndex, uint8_t * outputFrame, int threads)
 {
+    TICK(getMlvProcessedFrame8_)
+    printf("frame: %i, file: %s\r\n", frameIndex, strrchr(video->path, '/') + 1);
+
     /* Size of RAW frame */
     int rgb_frame_size = getMlvWidth(video) * getMlvHeight(video) * 3;
 
     /* Processed frame (RGB) */
     uint16_t * processed_frame = malloc( rgb_frame_size * sizeof(uint16_t) );
 
-    getMlvProcessedFrame16(video, frameIndex, processed_frame, threads);
+    TICK(getMlvProcessedFrame16_)
+    getMlvProcessedFrame16(video, frameIndex, processed_frame, threads);    
+    TOCK(getMlvProcessedFrame16_)
 
     /* Copy (and 8-bitize) */
     #pragma omp parallel for
@@ -493,17 +500,25 @@ void getMlvProcessedFrame8(mlvObject_t * video, uint64_t frameIndex, uint8_t * o
     }
 
     free(processed_frame);
+
+    TOCK(getMlvProcessedFrame8_)
 }
 
 /* To initialise mlv object with a clip
  * Two functions in one */
 mlvObject_t * initMlvObjectWithClip(char * mlvPath, int preview, int * err, char * error_message)
 {
+    printf("\r\n*****>>>>> file: %s\r\n\r\n", strrchr(mlvPath, '/') + 1);
+    TICK(initMlvObjectWithClip_)
+
     mlvObject_t * video = initMlvObject();
     char error_message_tmp[256] = {0};
     int err_tmp =  openMlvClip(video, mlvPath, preview, error_message_tmp);
     if (err != NULL) *err = err_tmp;
     if (error_message != NULL) strcpy(error_message, error_message_tmp);
+
+    TOCK(initMlvObjectWithClip_)
+
     return video;
 }
 

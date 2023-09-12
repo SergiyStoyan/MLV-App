@@ -1,3 +1,5 @@
+*.idx
+platform/build*
 
 .DS_Store
 platform/.DS_Store

@@ -398,17 +398,41 @@ void debayerLibRtProcess(uint16_t *debayerto, float *bayerdata, int width, int h
     for (int y = 0; y < height; ++y) blue2d[y] = (float *)(blue1d+(y*width));
 
     if( algorithm == 4)
+    {
+        printf("lrtpLmmseDemosaic()...\r\n");
+
         lrtpLmmseDemosaic( imagefloat2d, red2d, green2d, blue2d, width, height );
+    }
     else if( algorithm == 5 )
+    {
+        printf("lrtpIgvDemosaic()...\r\n");
+
         lrtpIgvDemosaic( imagefloat2d, red2d, green2d, blue2d, width, height );
+    }
     else if( algorithm == 6 )
+    {
+        printf("lrtpAhdDemosaic()...\r\n");
+
         lrtpAhdDemosaic( imagefloat2d, red2d, green2d, blue2d, width, height, camMatrix );
+    }
     else if( algorithm == 7 )
+    {
+        printf("lrtpRcdDemosaic()...\r\n");
+
         lrtpRcdDemosaic( imagefloat2d, red2d, green2d, blue2d, width, height );
+    }
     else if( algorithm == 8 )
+    {
+        printf("lrtpDcbDemosaic()...\r\n");
+
         lrtpDcbDemosaic( imagefloat2d, red2d, green2d, blue2d, width, height );
+    }
     else //AMaZE
+    {
+        printf("lrtpAmazeDemosaic()...\r\n");
+
         lrtpAmazeDemosaic( imagefloat2d, red2d, green2d, blue2d, width, height );
+    }
 
     //int rgb_pixels = pixelsize * 3;
 

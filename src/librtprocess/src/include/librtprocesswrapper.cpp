@@ -6,6 +6,7 @@
  */
 
 #include "librtprocess.h"
+#include "stdint.h"
 
 #if defined(__linux)
 #include <inttypes.h>

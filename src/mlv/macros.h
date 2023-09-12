@@ -4,6 +4,9 @@
 /* mlvObject_t */
 #include "mlv_object.h"
 
+#define TICK(X) clock_t X = clock(); printf("%s {\r\n", (#X));
+#define TOCK(X) { clock_t X2 = clock() - X;  printf("} %s: %ul tic, %g sec\r\n\r\n", (#X), (unsigned long)X2, (double)X2 / CLOCKS_PER_SEC); }
+
 #define getMlvRawCacheLimitMegaBytes(video) (video)->cache_limit_mb
 #define getMlvRawCacheLimitFrames(video) (video)->cache_limit_frames
 #define isMlvObjectCaching(video) (video)->cache_thread_count

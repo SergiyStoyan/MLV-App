@@ -298,17 +298,26 @@ void get_mlv_raw_frame_debayered( mlvObject_t * video,
                                   uint16_t * output_frame, 
                                   int debayer_type ) /* 0=bilinear 1=amaze ... */
 {
+    TICK(get_mlv_raw_frame_debayered_)
+    printf("debayer_type: %i\r\n", debayer_type);
+
+    TICK(getMlvRawFrameFloat_)
+
     int width = getMlvWidth(video);
     int height = getMlvHeight(video);
 
     /* Get the raw data in B&W */
     getMlvRawFrameFloat(video, frame_index, temp_memory);
 
+    TOCK(getMlvRawFrameFloat_)
+
     wb_convert_info_t wb_info;
 
     /* WB conversion for ideal debayer result, not for bilinear, easy and non debayer */
     if( !( debayer_type == 0 || debayer_type == 2 || debayer_type == 3 ) )
     {
+        printf("wb_convert()...\r\n");
+
         wb_convert(&wb_info, temp_memory, width, height, getMlvBlackLevel(video));
 
         /* CA correction, multithreaded, not for bilinear, easy and non debayer because not visible and slow */
@@ -324,6 +333,8 @@ void get_mlv_raw_frame_debayered( mlvObject_t * video,
                           0, 0, width, height,
                           0, video->ca_red, video->ca_blue);*/ /*auto, red, blue*/
 
+            printf("lrtpCaCorrect()...\r\n");
+
             lrtpCaCorrect( imagefloat2d, 0, 0, width, height,
                            0, 0, video->ca_red, video->ca_blue, 0 );
         }
@@ -332,29 +343,44 @@ void get_mlv_raw_frame_debayered( mlvObject_t * video,
     /* Debayer */
     if (/*debayer_type == 1 ||*/ debayer_type == 4 || debayer_type == 5 || /*debayer_type == 6 ||*/ debayer_type == 7 || debayer_type == 8)
     {
+        printf("debayerLibRtProcess()...\r\n");
+
         //AMaZE and AHD disabled from librtprocess because of bad artifacts
         debayerLibRtProcess(output_frame, temp_memory, width, height, debayer_type, video->processing->cam_matrix);
     }
     else if (debayer_type == 1 )
     {
+        printf("debayerAmaze()...\r\n");
+
         debayerAmaze(output_frame, temp_memory, width, height, getMlvCpuCores(video), getMlvBlackLevel(video));
     }
     else if(debayer_type == 2 || debayer_type == 3)
     {
+        printf("debayerEasy()...\r\n");
+
         /* threaded easy types */
         debayerEasy(output_frame, temp_memory, width, height, getMlvCpuCores(video), debayer_type);
     }
     else if (debayer_type == 6 )
     {
+        printf("debayerAhd()...\r\n");
+
         debayerAhd(output_frame, temp_memory, width, height);
     }
     else
     {
+        printf("debayerBasic()...\r\n");
+
         /* Debayer quickly (bilinearly) */
         debayerBasic(output_frame, temp_memory, width, height, 1);
     }
 
     /* WB conversion undo for ideal debayer result */
     if( !( debayer_type == 0 || debayer_type == 2 || debayer_type == 3 ) )
+    {
+        printf("wb_undo()...\r\n");
+
         wb_undo(&wb_info, output_frame, width, height, getMlvBlackLevel(video));
+    }
+    TOCK(get_mlv_raw_frame_debayered_)
 }
